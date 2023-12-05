@@ -32,8 +32,16 @@ const INCLUDE_PATH: &str = "-I./include/700";
 const INCLUDE_PATH: &str = "-I./include/710";
 
 fn main() {
+    println!("cargo:rerun-if-env-changed=FDB_CLIENT_LIB_PATH");
+    println!("cargo:rerun-if-env-changed=FDB_CLIENT_STATIC");
+
+    let mode = match env::var_os(format!("FDB_CLIENT_STATIC")) {
+        Some(_) => "static",
+        None => "dylib",
+    };
+
     // Link against fdb_c.
-    println!("cargo:rustc-link-lib=fdb_c");
+    println!("cargo:rustc-link-lib={}=fdb_c", mode);
 
     if let Ok(lib_path) = env::var("FDB_CLIENT_LIB_PATH") {
         println!("cargo:rustc-link-search=native={}", lib_path);
